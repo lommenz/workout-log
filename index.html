@@ -3,17 +3,18 @@
 <meta name="theme-color" content="#111827"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Workout Log">
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-180.png">
-<title>Workout Log V4</title>
+<title>Workout Log V16</title>
 <style>
 :root{--bg:#f5f6f8;--card:#fff;--text:#111827;--muted:#6b7280;--line:#dfe3e8;--blue:#2563eb;--green:#15803d;--red:#dc2626}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .app{max-width:720px;margin:auto;padding:calc(env(safe-area-inset-top) + 10px) 10px calc(94px + env(safe-area-inset-bottom))}
-header{padding:16px 2px 10px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}h1{font-size:25px;margin:0}.date{font-size:12px;color:var(--muted);margin-top:3px}
-.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:13px;margin:9px 0}.header-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+header{padding:16px 2px 10px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}h1{font-size:25px;margin:0}.date{font-size:12px;color:var(--muted);margin-top:3px}.date-edit{width:auto;min-width:0;border:0;border-radius:0;padding:0;background:transparent;font-size:12px;color:var(--muted);font-family:inherit;line-height:normal}
+.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:13px;margin:9px 0}.header-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:750;color:var(--muted);margin-bottom:5px}
 input,textarea{width:100%;min-width:0;font:inherit;border:1px solid #cfd5dc;border-radius:10px;padding:10px;background:#fff;color:var(--text)}textarea{min-height:54px;resize:vertical}
+.edit-reps-input{height:44px;line-height:22px;font-size:16px;-webkit-appearance:none;appearance:none;vertical-align:middle;display:block}
 hr{border:0;border-top:2px solid #111;margin:16px 0}.quick{display:grid;grid-template-columns:minmax(0,1fr) 74px minmax(0,1fr) 70px 58px;gap:6px;align-items:end}.quick input{padding:10px 8px}.quick button{width:100%;padding:10px 4px}
-.line{padding:13px 0;border-bottom:1px solid var(--line)}.line:last-child{border:0}.line-main{display:flex;align-items:center;gap:6px}.line-name{font-weight:750;flex:1;min-width:0}.line-text{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;margin-top:5px}.mini{font-size:11px;color:var(--muted);margin-top:4px}.pr{color:var(--green);font-weight:750}
+.line{padding:13px 0;border-bottom:1px solid var(--line)}.line:last-child{border:0}.line-main{display:flex;align-items:center;gap:6px}.line-name{font-weight:750;flex:1;min-width:0}.movement-tag{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:#e7e9ed;color:#374151;border-radius:6px;padding:3px 5px;vertical-align:middle;margin-left:4px}.line-text{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;margin-top:5px}.mini{font-size:11px;color:var(--muted);margin-top:4px}.pr{color:var(--green);font-weight:750}
 button{font:inherit;font-weight:700;border:0;border-radius:11px;padding:10px 12px;background:var(--blue);color:#fff;white-space:nowrap}.secondary{background:#e7e9ed;color:#111827}.ghost{background:transparent;color:var(--blue);padding:5px}.danger{background:transparent;color:var(--red);padding:5px}
 .actions{display:flex;gap:8px;margin:11px 0}.actions button{flex:1}.hint{font-size:11px;color:var(--muted);margin-top:7px}.memory-hint{font-size:10px;color:var(--muted);margin-top:4px}.empty{text-align:center;color:var(--muted);padding:34px 10px}
 .history-item{cursor:pointer}.history-title{font-weight:750}.meta{font-size:12px;color:var(--muted);margin-top:4px}.summary{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.7;margin-top:8px}
@@ -21,29 +22,55 @@ button{font:inherit;font-weight:700;border:0;border-radius:11px;padding:10px 12p
 .timer{position:fixed;right:12px;bottom:70px;background:#111827;color:#fff;border-radius:15px;padding:10px 13px;box-shadow:0 4px 18px #0003;z-index:6;display:none}.timer strong{font-size:20px}.timer button{background:#374151;padding:5px 8px;margin-left:5px;font-size:11px}.timer-select{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}.timer-select button{margin:0;padding:6px 8px;font-size:11px}
 .modal{position:fixed;inset:0;background:#0006;display:none;align-items:flex-end;justify-content:center;z-index:20}.sheet{background:#fff;border-radius:18px 18px 0 0;width:min(720px,100%);padding:17px 14px calc(20px + env(safe-area-inset-bottom));max-height:82vh;overflow:auto}
 @media(max-width:520px){.header-grid{grid-template-columns:1fr}.quick{grid-template-columns:minmax(0,1fr) 68px minmax(0,1fr) 64px 54px}.quick .qname{grid-column:1/6}.quick .qweight{grid-column:1/2}.quick .qreps{grid-column:2/4}.quick .qrest{grid-column:4/5}.quick button{grid-column:5/6;grid-row:2}}
-</style></head><body>
-<div class="app"><header><div><h1>Workout Log</h1><div class="date" id="today"></div></div><button onclick="newWorkout()">+ Workout</button></header><main id="app"></main></div>
+<style>
+.movement-group{border:1px solid #d8dde3;border-radius:12px;margin:8px 0;overflow:hidden;background:#fff}
+.movement-group summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:750;display:flex;justify-content:space-between;align-items:center}
+.movement-group summary::-webkit-details-marker{display:none}
+.movement-group .movement-body{padding:0 14px 12px}
+.movement-set{padding:8px 0;border-top:1px solid #edf0f2}
+.movement-count{font-size:12px;font-weight:500;opacity:.65;margin-left:8px}
+</style></style></head><body>
+<div class="app"><header><div><h1>Workout Log</h1><input class="date date-edit" id="date" type="date" aria-label="Workout date"></div><button onclick="newWorkout()">+ Workout</button></header><main id="app"></main></div>
 <nav class="bottom"><button data-tab="log">Workout</button><button data-tab="history">History</button><button data-tab="backup">Backup</button></nav>
 <div id="timer" class="timer"><strong id="timerVal">0:00</strong><button onclick="stopTimer()">Stop</button></div><div id="modal" class="modal"><div class="sheet" id="sheet"></div></div>
 <script>
-const KEY="workout_log_v4";let db=JSON.parse(localStorage.getItem(KEY)||"null")||JSON.parse(localStorage.getItem("workout_log_v3")||"null")||{history:[],draft:null};if(!db.history)db.history=[];let tab="log",current=db.draft||blank(),timerInt,timerEnd;
+const KEY="workout_log_v4";const TIMER_KEY="workout_log_last_rest";let db=JSON.parse(localStorage.getItem(KEY)||"null")||JSON.parse(localStorage.getItem("workout_log_v3")||"null")||{history:[],draft:null};if(!db.history)db.history=[];let tab="log",current=db.draft||blank(),timerInt,timerEnd;let autosaveTimer=null;
 function blank(){return{id:Date.now(),date:new Date().toISOString().slice(0,10),focus:"",note:"",location:"",exercises:[]}}
 function save(){db.draft=current;localStorage.setItem(KEY,JSON.stringify(db))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function fmt(d){return new Date(d+"T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}
 function reps(s){return String(s).replace(/,/g,"-").split("-").map(x=>x.trim()).filter(Boolean)}
+function validRepToken(x){return /^[0-9⁰¹²³⁴⁵⁶⁷⁸⁹]+$/.test(String(x))}
 function knownValues(field){const vals=[];db.history.forEach(w=>{if(w[field]&&String(w[field]).trim()&&!vals.some(v=>v.toLowerCase()===String(w[field]).trim().toLowerCase()))vals.push(String(w[field]).trim())});if(current[field]&&String(current[field]).trim()&&!vals.some(v=>v.toLowerCase()===String(current[field]).trim().toLowerCase()))vals.unshift(String(current[field]).trim());return vals.slice(0,30)}
 function knownFocuses(){return knownValues("focus")}
 function knownLocations(){return knownValues("location")}
 function rememberFields(){const f=document.getElementById("focus"),l=document.getElementById("location");if(f)current.focus=f.value;if(l)current.location=l.value;save()}
-function render(){document.getElementById("today").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});document.querySelectorAll(".bottom button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));document.getElementById("app").innerHTML=tab==="history"?historyView():tab==="backup"?backupView():logView()}
-function logView(){return `<div class="card"><div class="header-grid"><div><label>Date</label><input id="date" type="date" value="${esc(current.date)}"></div><div><label>Focus</label><input id="focus" onchange="rememberFields()" list="focus-options" autocomplete="on" placeholder="Chest / Tri" value="${esc(current.focus)}" oninput="rememberFields()"><datalist id="focus-options">${knownFocuses().map(v=>`<option value="${esc(v)}"></option>`).join("")}</datalist><div class="memory-hint">Remembers previous focuses</div></div><div><label>Note</label><textarea id="note" placeholder="Optional">${esc(current.note)}</textarea></div><div><label>Location</label><input id="location" onchange="rememberFields()" list="location-options" autocomplete="on" placeholder="Gym / Home" value="${esc(current.location)}" oninput="rememberFields()"><datalist id="location-options">${knownLocations().map(v=>`<option value="${esc(v)}"></option>`).join("")}</datalist><div class="memory-hint">Remembers previous locations</div></div></div></div><hr><div class="card"><b>Quick Entry</b><div class="quick" style="margin-top:8px"><input id="qname" class="qname" placeholder="Movement Name"><input id="qweight" class="qweight" type="number" step="0.5" inputmode="decimal" placeholder="55"><input id="qreps" class="qreps" placeholder="13-12-9"><input id="qrest" class="qrest" placeholder="4:00"><button onclick="quickAdd()">Add</button></div><div class="hint">Reps: <b>13-12-9</b> (spaces around the hyphens are optional).</div></div><div>${current.exercises.length?current.exercises.map(lineHTML).join(""):`<div class="empty">Add A Movement Above.<br><br><b>Ex: DB Flat Chest Press · 55 · 13-12-9 · 4:00</b></div>`}</div><div class="card">
+function populateMemories(){
+const u=a=>[...new Set(a.map(x=>String(x||"").trim()).filter(Boolean))].slice(0,30);
+const f=u(db.history.map(w=>w.focus).concat(current.focus));
+const l=u(db.history.map(w=>w.location).concat(current.location));
+const m=u(db.history.flatMap(w=>w.exercises.map(e=>e.name)).concat(current.exercises.map(e=>e.name)));
+[["focusMemory",f],["locationMemory",l],["movementMemory",m]].forEach(([id,a])=>{const e=document.getElementById(id);if(e)e.innerHTML=a.map(v=>`<option value="${esc(v)}"></option>`).join("")});
+}
+
+function normalizeMovementName(n){return String(n||"").trim().replace(/\s+/g," ").toLowerCase()}
+function groupedExercises(exercises){
+  const groups=[], byName=new Map();
+  exercises.forEach((e,i)=>{
+    const key=normalizeMovementName(e.name);
+    if(!byName.has(key)){const g={name:e.name,items:[],first:i};byName.set(key,g);groups.push(g)}
+    byName.get(key).items.push({...e,_index:i});
+  });
+  return groups;
+}
+function render(){const d=document.getElementById("date");if(d)d.value=current.date||new Date().toISOString().slice(0,10);document.querySelectorAll(".bottom button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));document.getElementById("app").innerHTML=tab==="history"?historyView():tab==="backup"?backupView():logView();populateMemories()}
+function logView(){return `<div class="card"><b>Quick Entry</b><div class="quick" style="margin-top:8px"><input id="qname" class="qname" list="movementMemory" placeholder="Movement Name" value="${esc(current.quickDraft?.name||"")}"><datalist id="movementMemory"></datalist><input id="qweight" class="qweight" type="number" step="0.5" inputmode="decimal" placeholder="55" value="${esc(current.quickDraft?.weight||"")}"><input id="qreps" class="qreps" placeholder="13-12-9" inputmode="numeric" autocomplete="off" value="${esc(current.quickDraft?.reps||"")}"><input id="qrest" class="qrest" placeholder="4:00" value="${esc(current.quickDraft?.rest||"")}"><button onclick="quickAdd()">Add</button></div></div><div>${current.exercises.length?current.exercises.map(lineHTML).join(""):`<div class="empty">Add A Movement Above.<br><br><b>Ex: DB Flat Chest Press · 55 · 13-12-9 · 4:00</b></div>`}</div><div class="card">
 <div style="font-weight:750">Rest Timer</div>
 <div style="margin-top:8px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center">
-<select id="restSelect" style="width:100%;font:inherit;border:1px solid #cfd5dc;border-radius:10px;padding:10px;background:#fff;color:var(--text)">
+<select id="restSelect" onchange="rememberRestTimer(this.value)" style="width:100%;font:inherit;border:1px solid #cfd5dc;border-radius:10px;padding:10px;background:#fff;color:var(--text)">
 <option value="30">0:30</option>
 <option value="60">1:00</option>
-<option value="90" selected>1:30</option>
+<option value="90">1:30</option>
 <option value="120">2:00</option>
 <option value="150">2:30</option>
 <option value="180">3:00</option>
@@ -52,15 +79,18 @@ function logView(){return `<div class="card"><div class="header-grid"><div><labe
 <option value="270">4:30</option>
 <option value="300">5:00</option>
 </select>
-<button onclick="startSelectedTimer()">Start</button>
+<button onclick="startSelectedTimer()">Start</button><button class="secondary" onclick="markMostRecent('Dropset')">Dropset</button><button class="secondary" onclick="markMostRecent('Superset')">Superset</button>
 </div>
 </div>
 <div class="actions"><button onclick="saveWorkout()">Save Workout</button></div>`}
-function lineHTML(e,i){let w=[...new Set(e.sets.map(s=>s.weight).filter(Boolean))].join("/"),r=e.sets.map(s=>s.reps).filter(Boolean).join(" - "),last=lastFor(e.name),best=bestWeight(e.name);return `<div class="line"><div class="line-main"><div class="line-name">${esc(e.name)}</div><button class="ghost" onclick="editExercise(${i})">Edit</button><button class="danger" onclick="removeEx(${i})">×</button></div><div class="line-text">${esc(w)} @ ${esc(r)}${e.rest?` [${esc(e.rest)}]`:""}</div>${last?`<div class="mini">Last: <b>${esc(last)}</b>${best?` · Best: <span class="pr">${esc(best)}</span>`:""}</div>`:""}</div>`}
-function sync(){current.date=document.getElementById("date")?.value||current.date;current.focus=document.getElementById("focus")?.value||"";current.note=document.getElementById("note")?.value||"";current.location=document.getElementById("location")?.value||"";save()}
-function quickAdd(){sync();let n=document.getElementById("qname").value.trim(),w=document.getElementById("qweight").value.trim(),r=document.getElementById("qreps").value.trim(),t=document.getElementById("qrest").value.trim();if(!n)return alert("Enter A Movement Name.");if(!w)return alert("Enter The Weight.");let rs=reps(r);if(!rs.length||rs.some(x=>isNaN(Number(x))))return alert("Use Reps Like 13-12-9.");current.exercises.push({name:n,rest:t,sets:rs.map(x=>({weight:w,reps:x}))});save();render();setTimeout(()=>document.getElementById("qname")?.focus(),20)}
-function editExercise(i){let e=current.exercises[i];document.getElementById("sheet").innerHTML=`<h2>Edit movement</h2><label>Movement</label><input id="en" value="${esc(e.name)}"><div style="margin-top:10px"><label>Weight</label><input id="ew" type="number" step="0.5" value="${esc(e.sets[0]?.weight||"")}"></div><div style="margin-top:10px"><label>Reps</label><input id="ep" value="${esc(e.sets.map(s=>s.reps).join("-"))}"></div><div style="margin-top:10px"><label>Rest</label><input id="er" value="${esc(e.rest||"")}"></div><div class="actions"><button class="secondary" onclick="closeModal()">Cancel</button><button onclick="applyEdit(${i})">Save Changes</button></div>`;document.getElementById("modal").style.display="flex"}
-function applyEdit(i){let n=document.getElementById("en").value.trim(),w=document.getElementById("ew").value.trim(),rs=reps(document.getElementById("ep").value),t=document.getElementById("er").value.trim();if(!n||!w||!rs.length||rs.some(x=>isNaN(Number(x))))return alert("Check The Movement, Weight, And Reps.");current.exercises[i]={name:n,rest:t,sets:rs.map(x=>({weight:w,reps:x}))};save();closeModal();render()}
+function lineHTML(e,i){let w=[...new Set(e.sets.map(s=>s.weight).filter(Boolean))].join("/"),r=e.sets.map(s=>s.reps).filter(Boolean).join(" - "),last=lastFor(e.name),best=bestWeight(e.name),tag=e.tag?`<span class="movement-tag">${esc(e.tag)}</span>`:"";return `<div class="line"><div class="line-main"><div class="line-name">${esc(e.name)} ${tag}</div><button class="ghost" onclick="editExercise(${i})">Edit</button><button class="danger" onclick="removeEx(${i})">×</button></div><div class="line-text">${esc(w)} @ ${esc(r)}${e.rest?` [${esc(e.rest)}]`:""}</div>${last?`<div class="mini">Last: <b>${esc(last)}</b>${best?` · Best: <span class="pr">${esc(best)}</span>`:""}</div>`:""}</div>`}
+function markMostRecent(tag){sync();if(!current.exercises.length)return alert("Add a movement first.");let e=current.exercises[current.exercises.length-1];e.tag=e.tag===tag?"":tag;save();render()}
+function sync(){current.date=document.getElementById("date")?.value||current.date;current.quickDraft={name:document.getElementById("qname")?.value||"",weight:document.getElementById("qweight")?.value||"",reps:document.getElementById("qreps")?.value||"",rest:document.getElementById("qrest")?.value||""};save()}
+function autosave(){clearTimeout(autosaveTimer);autosaveTimer=setTimeout(()=>sync(),80)}
+document.addEventListener("input",autosave);document.addEventListener("change",autosave);
+function quickAdd(){sync();let n=document.getElementById("qname").value.trim(),w=document.getElementById("qweight").value.trim(),r=document.getElementById("qreps").value.trim(),t=document.getElementById("qrest").value.trim();if(!n)return alert("Enter A Movement Name.");if(!w)return alert("Enter The Weight.");let rs=reps(r);if(!rs.length||rs.some(x=>!validRepToken(x)))return alert("Use Reps Like 13-12-9, with superscript digits allowed.");current.exercises.push({name:n,rest:t,sets:rs.map(x=>({weight:w,reps:x}))});current.quickDraft={name:"",weight:"",reps:"",rest:""};save();render();setTimeout(()=>document.getElementById("qname")?.focus(),20)}
+function editExercise(i){let e=current.exercises[i];document.getElementById("sheet").innerHTML=`<h2>Edit movement</h2><label>Movement</label><input id="en" value="${esc(e.name)}"><div style="margin-top:10px"><label>Weight</label><input id="ew" type="number" step="0.5" value="${esc(e.sets[0]?.weight||"")}"></div><div style="margin-top:10px"><label>Reps</label><input id="ep" class="edit-reps-input" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="${esc(e.sets.map(s=>s.reps).join("-"))}"></div><div style="margin-top:10px"><label>Rest</label><input id="er" value="${esc(e.rest||"")}"></div><div class="actions"><button class="secondary" onclick="closeModal()">Cancel</button><button onclick="applyEdit(${i})">Save Changes</button></div>`;document.getElementById("modal").style.display="flex"}
+function applyEdit(i){let n=document.getElementById("en").value.trim(),w=document.getElementById("ew").value.trim(),rs=reps(document.getElementById("ep").value),t=document.getElementById("er").value.trim();if(!n||!w||!rs.length||rs.some(x=>!validRepToken(x)))return alert("Check The Movement, Weight, And Reps.");current.exercises[i]={name:n,rest:t,tag:current.exercises[i].tag||"",sets:rs.map(x=>({weight:w,reps:x}))};save();closeModal();render()}
 function closeModal(){document.getElementById("modal").style.display="none"}function removeEx(i){if(confirm("Remove This Movement?")){current.exercises.splice(i,1);save();render()}}
 function newWorkout(){if(current.exercises.length&&!confirm("Start A New Workout? Your Current Draft Will Be Replaced."))return;current=blank();save();render()}
 function saveWorkout(){sync();current.exercises=current.exercises.filter(e=>e.name.trim());if(!current.exercises.length)return alert("Add At Least One Movement.");db.history.unshift(JSON.parse(JSON.stringify(current)));db.draft=null;localStorage.setItem(KEY,JSON.stringify(db));alert("Workout Saved.");current=blank();render()}
@@ -71,10 +101,15 @@ function openWorkout(i){current=JSON.parse(JSON.stringify(db.history[i]));tab="l
 function backupView(){return`<div class="card"><h2 style="margin:0 0 6px">Backup & Restore</h2><p class="mini">Export your workouts before changing phones or clearing app data.</p><div class="actions"><button onclick="exportData()">Export Backup</button><button class="secondary" onclick="document.getElementById('file').click()">Restore Backup</button></div><input id="file" type="file" accept=".json" style="display:none" onchange="importData(event)"></div><div class="card"><b>${db.history.length}</b> Saved Workout${db.history.length===1?"":"s"}</div>`}
 function exportData(){sync();let b=new Blob([JSON.stringify({version:4,history:db.history},null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="workout-log-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.history))throw 0;if(!confirm("Replace Current Saved History With This Backup?"))return;db.history=x.history;db.draft=null;current=blank();localStorage.setItem(KEY,JSON.stringify(db));tab="history";render();alert("Backup Restored.")}catch{alert("Invalid Workout Log Backup.")}};r.readAsText(f)}
-function startSelectedTimer(){startTimerSeconds(Number(document.getElementById("restSelect")?.value||90))}
+function rememberRestTimer(v){localStorage.setItem(TIMER_KEY,String(v))}
+function getLastRestTimer(){return Math.max(30,Math.min(300,Number(localStorage.getItem(TIMER_KEY)||90)))}
+function startSelectedTimer(){let v=Number(document.getElementById("restSelect")?.value||getLastRestTimer());rememberRestTimer(v);startTimerSeconds(v)}
 function startTimer(v){let p=v.split(":").map(Number),s=p.length===2?p[0]*60+p[1]:p[0]*60;startTimerSeconds(s)}
-function startTimerSeconds(s){s=Math.max(30,Math.min(300,Number(s)||90));timerEnd=Date.now()+s*1000;document.getElementById("timer").style.display="block";clearInterval(timerInt);updateTimer();timerInt=setInterval(updateTimer,250)}
-function updateTimer(){let l=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));document.getElementById("timerVal").textContent=Math.floor(l/60)+":"+String(l%60).padStart(2,"0");if(!l){clearInterval(timerInt);navigator.vibrate?.(200)}}
-function stopTimer(){clearInterval(timerInt);document.getElementById("timer").style.display="none"}
+function startTimerSeconds(s){clearInterval(hapticInt);hapticInt=null;s=Math.max(30,Math.min(300,Number(s)||90));rememberRestTimer(s);timerEnd=Date.now()+s*1000;document.getElementById("timer").style.display="block";clearInterval(timerInt);updateTimer();timerInt=setInterval(updateTimer,250)}
+function updateTimer(){let l=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));document.getElementById("timerVal").textContent=Math.floor(l/60)+":"+String(l%60).padStart(2,"0");if(!l){clearInterval(timerInt);if(!hapticInt){navigator.vibrate?.(180);hapticInt=setInterval(()=>navigator.vibrate?.(180),1000)}}}
+function stopTimer(){clearInterval(timerInt);clearInterval(hapticInt);hapticInt=null;document.getElementById("timer").style.display="none"}
 document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{if(tab==="log")sync();tab=b.dataset.tab;render()});render();
-</script><script>if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));</script></body></html>
+</script><script>if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));</script></body></html><style>
+.compact-header{row-gap:6px}
+.compact-header input,.compact-header textarea{padding:10px}
+</style>
