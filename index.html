@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Workout Log">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Workout Log V3</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--text:#111827;--muted:#6b7280;--line:#dfe3e8;--blue:#2563eb;--green:#15803d;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app{max-width:720px;margin:auto;padding:0 14px calc(94px + env(safe-area-inset-bottom))}
+header{padding:17px 2px 11px;display:flex;justify-content:space-between;align-items:flex-start}h1{font-size:25px;margin:0}.date{font-size:12px;color:var(--muted);margin-top:3px}
+.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;margin:10px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:750;color:var(--muted);margin-bottom:5px}
+input,textarea{width:100%;font:inherit;border:1px solid #cfd5dc;border-radius:10px;padding:10px;background:#fff;color:var(--text)}textarea{min-height:54px;resize:vertical}
+hr{border:0;border-top:2px solid #111;margin:17px 0}
+.quick{display:grid;grid-template-columns:minmax(0,1.7fr) .65fr 1fr .72fr auto;gap:6px;align-items:center}.quick input{padding:10px 8px}.quick button{padding:10px 11px}
+.line{padding:13px 0;border-bottom:1px solid var(--line)}.line:last-child{border:0}.line-main{display:flex;align-items:center;gap:7px}.line-name{font-weight:750;flex:1}.line-text{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;margin-top:5px}.mini{font-size:11px;color:var(--muted);margin-top:4px}.pr{color:var(--green);font-weight:750}
+button{font:inherit;font-weight:700;border:0;border-radius:11px;padding:10px 13px;background:var(--blue);color:#fff}.secondary{background:#e7e9ed;color:#111827}.ghost{background:transparent;color:var(--blue);padding:5px}.danger{background:transparent;color:var(--red);padding:5px}
+.actions{display:flex;gap:8px;margin:12px 0}.actions button{flex:1}
+.history-item{cursor:pointer}.history-title{font-weight:750}.meta{font-size:12px;color:var(--muted);margin-top:4px}.summary{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.7;margin-top:8px}
+.empty{text-align:center;color:var(--muted);padding:40px 12px}.hint{font-size:12px;color:var(--muted);margin:8px 1px 0}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:center;gap:4px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));z-index:5}.bottom button{background:transparent;color:var(--muted);font-size:12px;padding:7px 15px}.bottom button.active{color:var(--blue)}
+.timer{position:fixed;right:12px;bottom:70px;background:#111827;color:#fff;border-radius:15px;padding:10px 13px;box-shadow:0 4px 18px #0003;z-index:6;display:none}.timer strong{font-size:20px}.timer button{background:#374151;padding:5px 8px;margin-left:5px;font-size:11px}
+@media(max-width:560px){.quick{grid-template-columns:1fr 72px 1fr 70px 43px}.quick input{min-width:0}.quick .name{grid-column:1/6}.quick button{grid-column:5;grid-row:2}.quick .weight{grid-column:1/2}.quick .reps{grid-column:2/4}.quick .rest{grid-column:4/5}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div><h1>Workout Log</h1><div class="date" id="today"></div></div><button onclick="newWorkout()">+ Workout</button></header>
+<main id="app"></main>
+</div>
+<nav class="bottom"><button data-tab="log">Workout</button><button data-tab="history">History</button></nav>
+<div id="timer" class="timer"><strong id="timerVal">0:00</strong><button onclick="stopTimer()">Stop</button></div>
+
+<script>
+const KEY="workout_log_v3";
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||{history:[],draft:null};
+let tab="log", current=db.draft||blank(), timerInt=null,timerEnd=0;
+
+function save(){db.draft=current;localStorage.setItem(KEY,JSON.stringify(db))}
+function blank(){return{id:Date.now(),date:new Date().toISOString().slice(0,10),focus:"",note:"",location:"",exercises:[]}}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function fmt(d){return new Date(d+"T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}
+
+function render(){
+ document.getElementById("today").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+ document.querySelectorAll(".bottom button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+ document.getElementById("app").innerHTML=tab==="history"?historyView():logView();
+}
+
+function logView(){
+ return `<div class="card">
+  <div class="grid">
+   <div><label>Date</label><input id="date" type="date" value="${esc(current.date)}"></div>
+   <div><label>Focus</label><input id="focus" placeholder="Chest / Tri" value="${esc(current.focus)}"></div>
+  </div>
+  <div class="grid" style="margin-top:9px">
+   <div><label>Note</label><textarea id="note" placeholder="Optional">${esc(current.note)}</textarea></div>
+   <div><label>Location</label><input id="location" placeholder="Gym / Home" value="${esc(current.location)}"></div>
+  </div>
+ </div>
+ <hr>
+ <div class="card">
+  <div style="font-weight:750;margin-bottom:9px">Quick entry</div>
+  <div class="quick">
+   <input id="qname" class="name" placeholder="Movement — e.g. DB Flat Chest Press">
+   <input id="qweight" class="weight" type="number" step="0.5" inputmode="decimal" placeholder="55">
+   <input id="qreps" class="reps" placeholder="13 12 9">
+   <input id="qrest" class="rest" placeholder="4:00">
+   <button onclick="quickAdd()">Add</button>
+  </div>
+  <div class="hint">Name | weight | reps separated by spaces | rest (min:sec)</div>
+ </div>
+ <div id="lines">${current.exercises.length?current.exercises.map((e,i)=>lineHTML(e,i)).join(""):`<div class="empty">Enter a movement above.<br><br>Example: <b>DB Flat Chest Press · 55 · 13 12 9 · 4:00</b></div>`}</div>
+ <div class="actions"><button class="secondary" onclick="startTimer('1:30')">Start 1:30 timer</button><button onclick="saveWorkout()">Save workout</button></div>`;
+}
+
+function lineHTML(e,i){
+ const last=lastFor(e.name), best=bestWeight(e.name);
+ const weight=[...new Set(e.sets.map(s=>s.weight).filter(Boolean))].join("/");
+ const reps=e.sets.map(s=>s.reps).filter(Boolean).join(" - ");
+ return `<div class="line">
+  <div class="line-main"><div class="line-name">${esc(e.name)}</div><button class="ghost" onclick="editExercise(${i})">Edit</button><button class="danger" onclick="removeEx(${i})">×</button></div>
+  <div class="line-text">${esc(weight)} @ ${esc(reps)}${e.rest?` [${esc(e.rest)}]`:""}</div>
+  ${last?`<div class="mini">Last: <b>${esc(last)}</b>${best?` · Best: <span class="pr">${esc(best)}</span>`:""}</div>`:""}
+ </div>`;
+}
+
+function syncHeader(){
+ current.date=document.getElementById("date")?.value||current.date;
+ current.focus=document.getElementById("focus")?.value||"";
+ current.note=document.getElementById("note")?.value||"";
+ current.location=document.getElementById("location")?.value||"";
+ save();
+}
+function quickAdd(){
+ syncHeader();
+ const name=document.getElementById("qname").value.trim();
+ const weight=document.getElementById("qweight").value.trim();
+ const reps=document.getElementById("qreps").value.trim();
+ const rest=document.getElementById("qrest").value.trim();
+ if(!name)return alert("Enter a movement name.");
+ if(!weight)return alert("Enter the weight.");
+ if(!reps)return alert("Enter the reps, e.g. 13 12 9.");
+ const nums=reps.replace(/,/g," ").split(/\s+/).filter(Boolean);
+ if(nums.some(x=>isNaN(Number(x))))return alert("Reps should look like: 13 12 9");
+ current.exercises.push({name,rest:rest||"",sets:nums.map(r=>({weight,reps:r}))});
+ save();render();
+ setTimeout(()=>document.getElementById("qname")?.focus(),30);
+}
+function editExercise(i){
+ const e=current.exercises[i];
+ const name=prompt("Movement name",e.name);if(name===null)return;
+ const weight=prompt("Weight",e.sets[0]?.weight||"");if(weight===null)return;
+ const reps=prompt("Reps (space separated)",e.sets.map(s=>s.reps).join(" "));if(reps===null)return;
+ const rest=prompt("Rest (minutes:seconds)",e.rest||"");if(rest===null)return;
+ e.name=name.trim();e.rest=rest.trim();e.sets=reps.trim().split(/\s+/).filter(Boolean).map(r=>({weight:weight.trim(),reps:r}));
+ save();render();
+}
+function removeEx(i){if(confirm("Remove this movement?")){current.exercises.splice(i,1);save();render()}}
+function newWorkout(){if(current.exercises.length&&!confirm("Start a new workout? Your current draft will be replaced."))return;current=blank();db.draft=current;save();tab="log";render()}
+function saveWorkout(){
+ syncHeader();current.exercises=current.exercises.filter(e=>e.name.trim());
+ if(!current.exercises.length)return alert("Add at least one movement.");
+ db.history.unshift(JSON.parse(JSON.stringify(current)));db.draft=null;localStorage.setItem(KEY,JSON.stringify(db));
+ alert("Workout saved.");current=blank();render();
+}
+function lastFor(name){
+ if(!name)return"";
+ const w=db.history.find(w=>w.exercises.some(e=>e.name.toLowerCase()===name.toLowerCase()));
+ const e=w?.exercises.find(e=>e.name.toLowerCase()===name.toLowerCase());
+ if(!e)return"";
+ return `${[...new Set(e.sets.map(s=>s.weight).filter(Boolean))].join("/")} @ ${e.sets.map(s=>s.reps).filter(Boolean).join(" - ")}${e.rest?` [${e.rest}]`:""}`;
+}
+function bestWeight(name){
+ let n=0;if(!name)return"";
+ db.history.forEach(w=>w.exercises.forEach(e=>{if(e.name.toLowerCase()===name.toLowerCase())e.sets.forEach(s=>n=Math.max(n,parseFloat(s.weight)||0))}));
+ return n?`${n} lb`:"";
+}
+function historyView(){
+ if(!db.history.length)return`<div class="empty"><b>No saved workouts yet.</b><p>Your notebook-style workouts will appear here.</p><button onclick="tab='log';render()">Start workout</button></div>`;
+ return db.history.map((w,i)=>`<div class="card history-item" onclick="openWorkout(${i})">
+ <div class="history-title">${esc(fmt(w.date))} · ${esc(w.focus||"Workout")}</div>
+ <div class="meta">${esc(w.location||"")}${w.location&&w.note?" · ":""}${esc(w.note||"")}</div>
+ <div class="summary">${w.exercises.map(e=>`<div><b>${esc(e.name)}</b>: ${esc([...new Set(e.sets.map(s=>s.weight).filter(Boolean))].join("/"))} @ ${esc(e.sets.map(s=>s.reps).filter(Boolean).join(" - "))}${e.rest?` [${esc(e.rest)}]`:""}</div>`).join("")}</div>
+ </div>`).join("");
+}
+function openWorkout(i){current=JSON.parse(JSON.stringify(db.history[i]));tab="log";render()}
+function startTimer(v){const p=String(v).split(":").map(Number),sec=(p.length===2?p[0]*60+p[1]:p[0]*60)||90;timerEnd=Date.now()+sec*1000;document.getElementById("timer").style.display="block";clearInterval(timerInt);timerInt=setInterval(()=>{const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));document.getElementById("timerVal").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(!left){clearInterval(timerInt);navigator.vibrate?.(200)}},250)}
+function stopTimer(){clearInterval(timerInt);document.getElementById("timer").style.display="none"}
+document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{if(tab==="log")syncHeader();tab=b.dataset.tab;render()});
+render();
+</script>
+<script>if ("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));</script>
+</body>
+</html>
