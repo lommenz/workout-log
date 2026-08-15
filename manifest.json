@@ -1,7 +1,7 @@
 {
   "name": "Workout Log",
   "short_name": "Workout Log",
-  "start_url": "./?v=17",
+  "start_url": "./?v=19",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f5f6f8",
