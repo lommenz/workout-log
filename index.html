@@ -3,7 +3,7 @@
 <meta name="theme-color" content="#111827"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Workout Log">
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-180.png">
-<title>Workout Log V19</title>
+<title>Workout Log V20</title>
 <style>
 :root{--bg:#f5f6f8;--card:#fff;--text:#111827;--muted:#6b7280;--line:#dfe3e8;--blue:#2563eb;--green:#15803d;--red:#dc2626}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -21,7 +21,7 @@ button{font:inherit;font-weight:700;border:0;border-radius:11px;padding:10px 12p
 .bottom{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:center;gap:3px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));z-index:5}.bottom button{background:transparent;color:var(--muted);font-size:12px;padding:7px 13px}.bottom button.active{color:var(--blue)}
 .timer{position:fixed;right:12px;bottom:70px;background:#111827;color:#fff;border-radius:15px;padding:10px 13px;box-shadow:0 4px 18px #0003;z-index:6;display:none}.timer strong{font-size:20px}.timer button{background:#374151;padding:5px 8px;margin-left:5px;font-size:11px}.timer-select{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}.timer-select button{margin:0;padding:6px 8px;font-size:11px}
 .modal{position:fixed;inset:0;background:#0006;display:none;align-items:flex-end;justify-content:center;z-index:20}.sheet{background:#fff;border-radius:18px 18px 0 0;width:min(720px,100%);padding:17px 14px calc(20px + env(safe-area-inset-bottom));max-height:82vh;overflow:auto}
-@media(max-width:520px){.header-grid{grid-template-columns:1fr}.quick{grid-template-columns:minmax(0,1fr) 68px minmax(0,1fr) 64px 54px}.quick .qname{grid-column:1/6}.quick .qweight{grid-column:1/2}.quick .qreps{grid-column:2/4}.quick .qrest{grid-column:4/5}.quick button{grid-column:5/6;grid-row:2}}
+@media(max-width:520px){.header-grid{grid-template-columns:1fr}.quick{grid-template-columns:82px minmax(0,1fr) 64px 54px}.quick .qname{grid-column:1/5}.quick .qweight{grid-column:1/2}.quick .qreps{grid-column:2/3}.quick .qrest{grid-column:3/4}.quick button{grid-column:4/5;grid-row:2}}
 .movement-group{border:1px solid #d8dde3;border-radius:12px;margin:8px 0;overflow:hidden;background:#fff}
 .movement-group summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:750;display:flex;justify-content:space-between;align-items:center}
 .movement-group summary::-webkit-details-marker{display:none}
