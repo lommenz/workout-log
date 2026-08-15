@@ -22,14 +22,15 @@ button{font:inherit;font-weight:700;border:0;border-radius:11px;padding:10px 12p
 .timer{position:fixed;right:12px;bottom:70px;background:#111827;color:#fff;border-radius:15px;padding:10px 13px;box-shadow:0 4px 18px #0003;z-index:6;display:none}.timer strong{font-size:20px}.timer button{background:#374151;padding:5px 8px;margin-left:5px;font-size:11px}.timer-select{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}.timer-select button{margin:0;padding:6px 8px;font-size:11px}
 .modal{position:fixed;inset:0;background:#0006;display:none;align-items:flex-end;justify-content:center;z-index:20}.sheet{background:#fff;border-radius:18px 18px 0 0;width:min(720px,100%);padding:17px 14px calc(20px + env(safe-area-inset-bottom));max-height:82vh;overflow:auto}
 @media(max-width:520px){.header-grid{grid-template-columns:1fr}.quick{grid-template-columns:minmax(0,1fr) 68px minmax(0,1fr) 64px 54px}.quick .qname{grid-column:1/6}.quick .qweight{grid-column:1/2}.quick .qreps{grid-column:2/4}.quick .qrest{grid-column:4/5}.quick button{grid-column:5/6;grid-row:2}}
-<style>
 .movement-group{border:1px solid #d8dde3;border-radius:12px;margin:8px 0;overflow:hidden;background:#fff}
 .movement-group summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:750;display:flex;justify-content:space-between;align-items:center}
 .movement-group summary::-webkit-details-marker{display:none}
 .movement-group .movement-body{padding:0 14px 12px}
 .movement-set{padding:8px 0;border-top:1px solid #edf0f2}
 .movement-count{font-size:12px;font-weight:500;opacity:.65;margin-left:8px}
-</style></style></head><body>
+.compact-header{row-gap:6px}
+.compact-header input,.compact-header textarea{padding:10px}
+</style></head><body>
 <div class="app"><header><div><h1>Workout Log</h1><input id="headerDate" class="header-date" type="date" aria-label="Workout date"></div><button onclick="newWorkout()">+ Workout</button></header><main id="app"></main></div>
 <nav class="bottom"><button data-tab="log">Workout</button><button data-tab="history">History</button><button data-tab="backup">Backup</button></nav>
 <div id="timer" class="timer"><strong id="timerVal">0:00</strong><button onclick="stopTimer()">Stop</button></div><div id="modal" class="modal"><div class="sheet" id="sheet"></div></div>
@@ -92,7 +93,13 @@ function startTimerSeconds(s){clearInterval(hapticInt);hapticInt=null;s=Math.max
 function updateTimer(){let l=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));document.getElementById("timerVal").textContent=Math.floor(l/60)+":"+String(l%60).padStart(2,"0");if(!l){clearInterval(timerInt);if(!hapticInt){navigator.vibrate?.(180);hapticInt=setInterval(()=>navigator.vibrate?.(180),1000)}}}
 function stopTimer(){clearInterval(timerInt);clearInterval(hapticInt);hapticInt=null;document.getElementById("timer").style.display="none"}
 document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{if(tab==="log")sync();tab=b.dataset.tab;render()});render();
-</script><script>if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));</script></body></html><style>
-.compact-header{row-gap:6px}
-.compact-header input,.compact-header textarea{padding:10px}
-</style>
+</script><script>
+if("serviceWorker" in navigator){
+  window.addEventListener("load", async ()=>{
+    try{
+      const reg=await navigator.serviceWorker.register("./sw.js?v=16-cachefix-1",{updateViaCache:"none"});
+      await reg.update();
+    }catch(e){console.warn("Service worker update failed",e)}
+  });
+}
+</script></body></html>
