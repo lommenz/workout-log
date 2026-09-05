@@ -3,7 +3,7 @@
 <meta name="theme-color" content="#111827"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Workout Log">
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-180.png">
-<title>Workout Log V38</title>
+<title>Workout Log V39</title>
 <style>
 :root{--bg:#f5f6f8;--card:#fff;--text:#111827;--muted:#6b7280;--line:#dfe3e8;--blue:#2563eb;--green:#15803d;--red:#dc2626}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -23,10 +23,10 @@ button{font:inherit;font-weight:700;border:0;border-radius:11px;padding:10px 12p
 .rest-timer-card{margin-bottom:4px}.rest-timer-row{margin-top:8px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}.rest-timer-row select{width:100%;font:inherit;border:1px solid #cfd5dc;border-radius:10px;padding:10px;background:#fff;color:var(--text)}
 .modal{position:fixed;inset:0;background:#0006;display:none;align-items:flex-end;justify-content:center;z-index:20}.sheet{background:#fff;border-radius:18px 18px 0 0;width:min(720px,100%);padding:17px 14px calc(20px + env(safe-area-inset-bottom));max-height:82vh;overflow:auto}
 @media(max-width:520px){.header-grid{grid-template-columns:1fr}.quick{grid-template-columns:82px minmax(0,1fr) 78px 54px}.quick .qname{grid-column:1/5}.quick .qweight{grid-column:1/2}.quick .qreps{grid-column:2/3}.quick .qrest-wrap{grid-column:3/4}.quick button{grid-column:4/5;grid-row:2}}
-.movement-group{border:1px solid #d8dde3;border-radius:12px;margin:8px 0;overflow:hidden;background:#fff}
+.movement-group{border:1px solid #d8dde3;border-radius:12px;margin:8px 0;overflow:hidden;background:var(--bg)}
 .movement-group summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:750;display:flex;justify-content:space-between;align-items:center;background:var(--bg)}
 .movement-group summary::-webkit-details-marker{display:none}
-.movement-group .movement-body{padding:0 14px 12px}
+.movement-group .movement-body{padding:0 14px 12px;background:var(--bg)}
 .movement-set{padding:8px 0;border-top:1px solid #edf0f2}
 .movement-count{font-size:12px;font-weight:500;opacity:.65;margin-left:8px}
 .compact-header{row-gap:6px}
@@ -36,11 +36,11 @@ button{font:inherit;font-weight:700;border:0;border-radius:11px;padding:10px 12p
 <nav class="bottom"><button data-tab="log">Workout</button><button data-tab="history">History</button><button data-tab="backup">Backup</button></nav>
 <div id="modal" class="modal"><div class="sheet" id="sheet"></div></div>
 <script>
-const KEY="workout_log_v4";const TIMER_KEY="workout_log_last_rest";let db=JSON.parse(localStorage.getItem(KEY)||"null")||JSON.parse(localStorage.getItem("workout_log_v3")||"null")||{history:[],draft:null};if(!db.history)db.history=[];let tab="log",current=db.draft||blank(),timerInt,timerEnd,hapticInt=null,timerActive=false,timerPreset=null;let autosaveTimer=null;let repDashTimer=null;
+const KEY="workout_log_v4";const ACTIVE_KEY="workout_log_active_session";const TIMER_KEY="workout_log_last_rest";let db=JSON.parse(localStorage.getItem(KEY)||"null")||JSON.parse(localStorage.getItem("workout_log_v3")||"null")||{history:[],draft:null};if(!db.history)db.history=[];let tab="log",current=JSON.parse(localStorage.getItem(ACTIVE_KEY)||"null")||db.draft||blank(),timerInt,timerEnd,timerActive=false,timerPreset=null;let autosaveTimer=null;let repDashTimer=null;
 function blank(){return{id:Date.now(),date:new Date().toISOString().slice(0,10),focus:"",note:"",location:"",exercises:[]}}
 function migrateLegacySupersets(){let changed=false;const workouts=[...db.history,current];workouts.forEach(w=>w?.exercises?.forEach(e=>{if(e.tag==="Superset"||e.superSet){e.superset=true;if(e.tag==="Superset")e.tag="";delete e.superSet;changed=true}}));if(changed){db.draft=current;localStorage.setItem(KEY,JSON.stringify(db))}}
 migrateLegacySupersets();
-function save(){db.draft=current;localStorage.setItem(KEY,JSON.stringify(db))}
+function save(){db.draft=JSON.parse(JSON.stringify(current));localStorage.setItem(ACTIVE_KEY,JSON.stringify(current));localStorage.setItem(KEY,JSON.stringify(db))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function fmt(d){return new Date(d+"T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}
 function reps(s){return String(s).replace(/,/g,"-").split("-").map(x=>x.trim()).filter(Boolean)}
@@ -104,10 +104,10 @@ function lastFor(n){const focusKey=String(current.focus||"").trim().toLowerCase(
 function historyView(){if(!db.history.length)return`<div class="empty"><b>No Saved Workouts yet.</b><p>Your Workouts Will Appear Here.</p></div>`;return db.history.map((w,i)=>`<div class="history-wrap"><button class="history-delete" onclick="deleteWorkout(${i},event)">Delete Workout</button><div class="card history-item" data-history="${i}" onclick="openWorkout(${i})"><div class="history-head"><div class="history-head-text"><div class="history-title">${esc(fmt(w.date))} · ${esc(w.focus||"Workout")}</div><div class="meta">${esc(w.location||"")}${w.location&&w.note?" · ":""}${esc(w.note||"")}</div></div><button class="trash-btn" aria-label="Delete workout" onclick="deleteWorkout(${i},event)">🗑</button></div><div class="summary">${w.exercises.map(e=>`<div><b>${esc(e.name)}</b>: ${esc([...new Set(e.sets.map(s=>s.weight).filter(Boolean))].join("/"))} @ ${esc(e.sets.map(s=>s.reps).join(" - "))}${e.dropSet?.weight||e.dropSet?.reps?` · Drop: ${esc(e.dropSet.weight||"")} @ ${esc(e.dropSet.reps||"")}`:""}${e.rest?` [${esc(e.rest)}]`:""}</div>`).join("")}</div></div></div>`).join("")}
 function deleteWorkout(i,ev){ev?.stopPropagation();if(!confirm("Delete This Workout?"))return;db.history.splice(i,1);localStorage.setItem(KEY,JSON.stringify(db));render()}
 let historyTouchX=null;document.addEventListener("touchstart",e=>{let c=e.target.closest?.(".history-item");if(!c)return;historyTouchX=e.touches[0].clientX},{passive:true});document.addEventListener("touchend",e=>{let c=e.target.closest?.(".history-item");if(!c||historyTouchX===null)return;let dx=e.changedTouches[0].clientX-historyTouchX;historyTouchX=null;if(dx<-45){document.querySelectorAll(".history-item.swiped").forEach(x=>x!==c&&x.classList.remove("swiped"));c.classList.add("swiped");}else if(dx>35)c.classList.remove("swiped")},{passive:true});
-function openWorkout(i){current=JSON.parse(JSON.stringify(db.history[i]));tab="log";render()}
+function openWorkout(i){current=JSON.parse(JSON.stringify(db.history[i]));save();tab="log";render()}
 function backupView(){return`<div class="card"><h2 style="margin:0 0 6px">Backup & Restore</h2><p class="mini">Export your workouts before changing phones or clearing app data.</p><div class="actions"><button onclick="exportData()">Export Backup</button><button class="secondary" onclick="document.getElementById('file').click()">Restore Backup</button></div><input id="file" type="file" accept=".json" style="display:none" onchange="importData(event)"></div><div class="card"><b>${db.history.length}</b> Saved Workout${db.history.length===1?"":"s"}</div>`}
 async function exportData(){sync();const text=JSON.stringify({version:4,history:db.history},null,2),name="workout-log-backup.json",file=new File([text],name,{type:"application/json"});try{if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:"Workout Log Backup"});return}}catch(err){if(err?.name==="AbortError")return}const b=new Blob([text],{type:"application/json"}),a=document.createElement("a"),url=URL.createObjectURL(b);a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
-function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.history))throw 0;if(!confirm("Replace Current Saved History With This Backup?"))return;db.history=x.history;db.draft=null;current=blank();localStorage.setItem(KEY,JSON.stringify(db));tab="history";render();alert("Backup Restored.")}catch{alert("Invalid Workout Log Backup.")}};r.readAsText(f)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.history))throw 0;if(!confirm("Replace Current Saved History With This Backup?"))return;db.history=x.history;db.draft=null;current=blank();localStorage.removeItem(ACTIVE_KEY);localStorage.setItem(KEY,JSON.stringify(db));tab="history";render();alert("Backup Restored.")}catch{alert("Invalid Workout Log Backup.")}};r.readAsText(f)}
 function rememberRestTimer(v){const n=Number(v);if(Number.isFinite(n)&&n>=30&&n<=300)localStorage.setItem(TIMER_KEY,String(n))}
 function getLastRestTimer(){return Math.max(30,Math.min(300,Number(localStorage.getItem(TIMER_KEY)||90)))}
 function formatTimerSeconds(s){s=Math.max(0,Math.ceil(Number(s)||0));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
@@ -115,16 +115,15 @@ function renderTimerState(){const rs=document.getElementById("restSelect"),btn=d
 function timerAction(){if(timerActive)stopTimer();else startSelectedTimer()}
 function startSelectedTimer(){let v=Number(document.getElementById("restSelect")?.value||getLastRestTimer());rememberRestTimer(v);startTimerSeconds(v)}
 function startTimer(v){let p=v.split(":").map(Number),s=p.length===2?p[0]*60+p[1]:p[0]*60;startTimerSeconds(s)}
-function startTimerSeconds(s){clearInterval(timerInt);clearInterval(hapticInt);hapticInt=null;s=Math.max(30,Math.min(300,Number(s)||90));timerPreset=s;rememberRestTimer(s);timerEnd=Date.now()+s*1000;timerActive=true;renderTimerState();updateTimer();timerInt=setInterval(updateTimer,250)}
-function updateTimer(){let l=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const rs=document.getElementById("restSelect");if(rs&&timerActive){let opt=rs.querySelector('option[value="__countdown"]');if(!opt){opt=document.createElement("option");opt.value="__countdown";rs.appendChild(opt)}opt.textContent=formatTimerSeconds(l);rs.value="__countdown";rs.style.pointerEvents="none";rs.setAttribute("aria-disabled","true")}if(!l){clearInterval(timerInt);if(!hapticInt){pulseHaptic();hapticInt=setInterval(pulseHaptic,1000)}}}
-function pulseHaptic(){try{navigator.vibrate?.([180,80,180])}catch(e){}try{if(window.webkit?.messageHandlers?.haptic)window.webkit.messageHandlers.haptic.postMessage("heavy")}catch(e){}}
-function stopTimer(){clearInterval(timerInt);clearInterval(hapticInt);hapticInt=null;timerActive=false;try{navigator.vibrate?.(0)}catch(e){}renderTimerState()}
-document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{if(tab==="log")sync();tab=b.dataset.tab;render()});render();
+function startTimerSeconds(s){clearInterval(timerInt);s=Math.max(30,Math.min(300,Number(s)||90));timerPreset=s;rememberRestTimer(s);timerEnd=Date.now()+s*1000;timerActive=true;renderTimerState();updateTimer();timerInt=setInterval(updateTimer,250)}
+function updateTimer(){let l=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const rs=document.getElementById("restSelect");if(rs&&timerActive){let opt=rs.querySelector('option[value="__countdown"]');if(!opt){opt=document.createElement("option");opt.value="__countdown";rs.appendChild(opt)}opt.textContent=formatTimerSeconds(l);rs.value="__countdown";rs.style.pointerEvents="none";rs.setAttribute("aria-disabled","true")}if(!l){clearInterval(timerInt);timerActive=false;renderTimerState()}}
+function stopTimer(){clearInterval(timerInt);timerActive=false;renderTimerState()}
+document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{const next=b.dataset.tab;if(tab==="log")sync();if(next==="log"&&tab!=="log"){const active=JSON.parse(localStorage.getItem(ACTIVE_KEY)||"null");if(active)current=active}tab=next;render()});render();
 </script><script>
 if("serviceWorker" in navigator){
   window.addEventListener("load", async ()=>{
     try{
-      const reg=await navigator.serviceWorker.register("./sw.js?v=38-ui",{updateViaCache:"none"});
+      const reg=await navigator.serviceWorker.register("./sw.js?v=39",{updateViaCache:"none"});
       await reg.update();
     }catch(e){console.warn("Service worker update failed",e)}
   });
