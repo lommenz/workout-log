@@ -121,6 +121,8 @@ function startTimer(v){let p=v.split(":").map(Number),s=p.length===2?p[0]*60+p[1
 function startTimerSeconds(s){clearInterval(timerInt);s=Math.max(30,Math.min(300,Number(s)||90));timerPreset=s;timerDone=false;rememberRestTimer(s);timerEnd=Date.now()+s*1000;timerActive=true;renderTimerState();updateTimer();timerInt=setInterval(updateTimer,250)}
 function updateTimer(){let l=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const rs=document.getElementById("restSelect");if(rs&&timerActive){let opt=rs.querySelector('option[value="__countdown"]');if(!opt){opt=document.createElement("option");opt.value="__countdown";rs.appendChild(opt)}opt.textContent=formatTimerSeconds(l);rs.value="__countdown";rs.style.pointerEvents="none";rs.setAttribute("aria-disabled","true")}if(!l){clearInterval(timerInt);timerActive=false;timerDone=true;renderTimerState()}}
 function stopTimer(){clearInterval(timerInt);timerActive=false;timerDone=false;renderTimerState()}
+function acknowledgeTimerDone(){if(!timerDone)return;clearInterval(timerInt);timerActive=false;timerDone=false;timerPreset=getLastRestTimer();renderTimerState()}
+document.addEventListener("pointerdown",e=>{if(timerDone)acknowledgeTimerDone()},{passive:true});
 document.addEventListener("input",e=>{if(tab!=="log")return;const t=e.target;if(t.id==="focus"||t.id==="location"||t.id==="note"||t.id==="qname"||t.id==="qweight"||t.id==="qreps"||t.id==="qrest")sync()},{passive:true});
 document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{const next=b.dataset.tab;if(tab==="log")sync();if(next==="log"&&tab!=="log"){const active=JSON.parse(localStorage.getItem(ACTIVE_KEY)||"null");if(active)current=active}tab=next;render()});render();
 </script><script>
