@@ -1,4 +1,4 @@
-const CACHE = "workout-log-v53";
+const CACHE = "workout-log-v54";
 const CORE = [
   "./manifest.json",
   "./icon-180.png",
